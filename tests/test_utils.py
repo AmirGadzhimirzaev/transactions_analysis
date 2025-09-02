@@ -1,7 +1,6 @@
 import datetime
 from unittest.mock import patch
 
-import pandas as pd
 import pytest
 
 from src.utils import get_greetings, get_filtered_df, get_card_data, get_top_trans, get_currency_rates, \
@@ -11,21 +10,6 @@ example_time_night = datetime.datetime(2020, 2, 11, 3, 0, 23)
 example_time_morning = datetime.datetime(2020, 2, 11, 6, 0, 23)
 example_time_afternoon = datetime.datetime(2020, 2, 11, 12, 0, 23)
 example_time_evening = datetime.datetime(2020, 2, 11, 19, 0, 23)
-
-
-@pytest.fixture
-def df_for_tests():
-    test_df = pd.DataFrame({
-        "Дата операции": ["30.12.2021 01:00:00", "20.12.2021 01:00:00", "10.12.2021 01:00:00"],
-        "Дата платежа": ["30.12.2021", "20.12.2021", "10.12.2021"],
-        "Сумма операции": [1442.11, -23.22, -334.55],
-        "Сумма операции с округлением": [1442.11, 23.22, 334.55],
-        "Категория": ["ЖКХ", "Бонус", "Маркет"],
-        "Описание": ["ЖКХ Услуги", "Бонус за покупку", "Яндекс Маркет"],
-        "Номер карты": [None, "*2333", "*3222"],
-        "Статус": ["OK", "OK", "OK"]})
-
-    return test_df
 
 
 @pytest.mark.parametrize("hour, expected", [(example_time_night, '{"greeting": "Доброй ночи"}'),
