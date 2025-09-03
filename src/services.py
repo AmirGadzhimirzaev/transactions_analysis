@@ -1,7 +1,20 @@
 import json
+import logging
 import re
 
 import pandas as pd
+
+from config import LOGS_DIR
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s: %(message)s",
+    filename=LOGS_DIR["web_page_logs"],
+    filemode="w",
+    encoding="UTF-8",
+)
+
+reports_logger = logging.getLogger("reports_data")
 
 
 def get_simple_search(user_search: str, transactions: list[dict]) -> str:

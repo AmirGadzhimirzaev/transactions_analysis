@@ -23,13 +23,13 @@ logging.basicConfig(
     encoding="UTF-8",
 )
 
-logger = logging.getLogger("web_page_data")
+web_logger = logging.getLogger("web_page_data")
 
 
 def get_greetings(user_time: datetime.datetime = datetime.datetime.now()) -> str:
     """Функция реализует приветствие"""
 
-    logger.info("Вызвана функция 'get_greetings'")
+    web_logger.info("Вызвана функция 'get_greetings'")
 
     if not isinstance(user_time, datetime.datetime):
         return "Неверный формат времени"
@@ -51,14 +51,14 @@ def get_greetings(user_time: datetime.datetime = datetime.datetime.now()) -> str
 def get_filtered_df(user_time: str, xlsx_file: str) -> DataFrame | None:
     """Функция принимает путь к файлу. Возвращает объект DataFrame в заданном диапазоне"""
 
-    logger.info("Вызвана функция 'get_filtered_by_date'")
+    web_logger.info("Вызвана функция 'get_filtered_by_date'")
 
     try:
         df = pd.read_excel(xlsx_file)
         end_time = datetime.datetime.strptime(user_time, "%Y-%m-%d %H:%M:%S")
         date_range = pd.date_range(f"{end_time.year}-{end_time.month}", end_time)
     except Exception as e:
-        logger.error(f"Ошибка в get_filtered_by_date - {e}", exc_info=True)
+        web_logger.error(f"Ошибка в get_filtered_by_date - {e}", exc_info=True)
         return None
     else:
         return df[
@@ -70,7 +70,7 @@ def get_filtered_df(user_time: str, xlsx_file: str) -> DataFrame | None:
 def get_card_data(dframe: DataFrame | None) -> str:
     """2. Функция реализует данные по карте"""
 
-    logger.info("Вызвана функция 'get_card_data'")
+    web_logger.info("Вызвана функция 'get_card_data'")
 
     if dframe is None:
         return "Что то не так!"
@@ -98,7 +98,7 @@ def get_card_data(dframe: DataFrame | None) -> str:
 def get_top_trans(dframe: DataFrame | None) -> str:
     """Функция принимает на вход дату и путь к файлу транзакций xlsx возвращает Топ-5 транзакций по сумме платежа"""
 
-    logger.info("Вызвана функция 'get_top_trans'")
+    web_logger.info("Вызвана функция 'get_top_trans'")
 
     if dframe is None:
         return "Что то не так!"
@@ -126,7 +126,7 @@ def get_top_trans(dframe: DataFrame | None) -> str:
 def get_currency_rates() -> str:
     """Функция возвращает курс валют через API https://app.exchangerate-api.com/"""
 
-    logger.info("Вызвана функция 'get_currency_rates'")
+    web_logger.info("Вызвана функция 'get_currency_rates'")
 
     list_of_currencies = []
 
@@ -147,7 +147,7 @@ def get_currency_rates() -> str:
 def get_stock_price() -> str:
     """Функция возвращает стоимость акций через API https://site.financialmodelingprep.com/"""
 
-    logger.info("Вызвана функция 'get_stock_price'")
+    web_logger.info("Вызвана функция 'get_stock_price'")
 
     list_of_stock = []
 
