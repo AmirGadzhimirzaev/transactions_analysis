@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os
+from locale import currency
 
 import pandas as pd
 import requests
@@ -26,13 +27,31 @@ logging.basicConfig(
 web_logger = logging.getLogger("web_page_data")
 
 
-def get_greetings(user_time: datetime.datetime = datetime.datetime.now()) -> str:
+def get_datetime(date: str | datetime.datetime = datetime.datetime.now()) -> tuple | str:
+    """Функция принимает строку с датой в формате YYYY-MM-DD HH:MM:SS или объект datetime и
+    возвращает объект 'datetime', и дату с первого числа входящего месяца. Default - datetime.now()"""
+
+    try:
+        if isinstance(date, str):
+            date_datetime = datetime.datetime.strptime(date, '%Y-%m-%d %H:%M:%S')
+        else:
+            date_datetime = date
+
+    except Exception as e:
+        return 'Неверный формат. Верный формат "YYYY-MM-DD HH:MM:SS" или объект datetime.'
+
+    date_datetime_first = date_datetime.replace(day=1)
+
+    return date_datetime, date_datetime_first
+
+
+def get_greetings(user_time: datetime.datetime) -> str:
     """Функция реализует приветствие"""
 
     web_logger.info("Вызвана функция 'get_greetings'")
 
     if not isinstance(user_time, datetime.datetime):
-        return "Неверный формат времени"
+        return 'Формат неверный. Должен быть объект datetime.datetime.'
 
     dict_of_greetings = {
         "Доброй ночи": range(5),
@@ -44,8 +63,6 @@ def get_greetings(user_time: datetime.datetime = datetime.datetime.now()) -> str
     for greeting, time_range in dict_of_greetings.items():
         if pd.to_datetime(user_time).hour in time_range:
             return json.dumps({"greeting": greeting}, ensure_ascii=False)
-
-    return "Что-то пошло не так!"
 
 
 def get_filtered_df(user_time: str, xlsx_file: str) -> DataFrame | None:
@@ -64,11 +81,11 @@ def get_filtered_df(user_time: str, xlsx_file: str) -> DataFrame | None:
         return df[
             (pd.to_datetime(df["Дата операции"], dayfirst=True).dt.normalize().isin(date_range))
             & (df["Статус"] == "OK")
-        ]
+            ]
 
 
 def get_card_data(dframe: DataFrame | None) -> str:
-    """2. Функция реализует данные по карте"""
+    """Функция возвращает данные по карте"""
 
     web_logger.info("Вызвана функция 'get_card_data'")
 
@@ -106,7 +123,7 @@ def get_top_trans(dframe: DataFrame | None) -> str:
     list_of_transactions = []
 
     top5 = dframe.nlargest(5, "Сумма операции с округлением")
-    result = top5.sort_values("Дата платежа", ascending=False)
+    result = top5.sort_values("Сумма платежа", ascending=False)
 
     for index, row in result.iterrows():
         transaction_info = {
@@ -129,14 +146,21 @@ def get_currency_rates() -> str:
     web_logger.info("Вызвана функция 'get_currency_rates'")
 
     list_of_currencies = []
+    response = ""
 
     with open(USER_SETTINGS_DIR) as settings:
         data = json.load(settings)
 
     list_of_cur_acr = data["user_currencies"]
 
-    for currency in list_of_cur_acr:
-        response = requests.get(f"https://v6.exchangerate-api.com/v6/{API_KEY_CURRENCY}/latest/{currency}").json()
+    try:
+        for currency in list_of_cur_acr:
+            response = requests.get(f"https://v6.exchangerate-api.com/v6/{API_KEY_CURRENCY}/latest/{currency}").json()
+    except Exception as e:
+        web_logger.error("Ошибка в get_currency_rates")
+        list_of_currencies.append({})
+    else:
+        print(currency, list_of_cur_acr, response)
         list_of_currencies.append({"currency": currency, "rate": round(response["conversion_rates"]["RUB"], 2)})
 
     currency_rates = {"currency_rates": list_of_currencies}
@@ -150,16 +174,21 @@ def get_stock_price() -> str:
     web_logger.info("Вызвана функция 'get_stock_price'")
 
     list_of_stock = []
+    response = ""
 
     with open(USER_SETTINGS_DIR) as settings:
         data = json.load(settings)
 
     list_of_stock_acr = data["user_stocks"]
 
-    for stock in list_of_stock_acr:
-        response = requests.get(
-            f"https://financialmodelingprep.com/stable/profile?symbol={stock}&apikey={API_KEY_STOCK}"
-        ).json()
+    try:
+        for stock in list_of_stock_acr:
+            response = requests.get(
+                f"https://financialmodelingprep.com/stable/profile?symbol={stock}&apikey={API_KEY_STOCK}").json()
+    except Exception as e:
+        web_logger.error("Ошибка в get_stock_price")
+        list_of_stock.append({})
+    else:
         list_of_stock.append({"stock": response[0]["symbol"], "price": response[0]["price"]})
 
     stock_price = {"stock_prices": list_of_stock}

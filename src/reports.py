@@ -2,10 +2,11 @@ import json
 import logging
 from datetime import datetime
 from functools import wraps
+from typing import Any, Callable
 
 import pandas as pd
 
-from config import REPORT_DIR, LOGS_DIR
+from config import LOGS_DIR, REPORT_DIR
 
 logging.basicConfig(
     level=logging.INFO,
@@ -18,13 +19,13 @@ logging.basicConfig(
 reports_logger = logging.getLogger("reports_data")
 
 
-def save_to_file(path_to_file: str = REPORT_DIR):
+def save_to_file(path_to_file: str = REPORT_DIR) -> Callable:
     """Декоратор для записи отчета в файл .json"""
     reports_logger.info("Декоратор 'save_to_file' задействован")
 
-    def save_to_file_default(func):
+    def save_to_file_default(func: Callable) -> Callable:
         @wraps(func)
-        def inner(*args, **kwargs):
+        def inner(*args: Any, **kwargs: Any) -> Any:
             with open(path_to_file, "w", encoding="utf-8") as f:
                 json.dump((func(*args, **kwargs).to_dict(orient="records")), f, ensure_ascii=False, indent=4)
 
@@ -36,9 +37,7 @@ def save_to_file(path_to_file: str = REPORT_DIR):
 
 
 @save_to_file()
-def spending_by_category(df: pd.DataFrame,
-                         category: str,
-                         date: str | None) -> pd.DataFrame:
+def spending_by_category(df: pd.DataFrame, category: str, date: str | None) -> pd.DataFrame:
     """Функция возвращает траты по заданной категории за последние три месяца (от переданной даты)"""
 
     reports_logger.info("Вызвана функция 'spending_by_category'")
@@ -53,7 +52,13 @@ def spending_by_category(df: pd.DataFrame,
     end_date_str = data_as_dt.strftime("%Y-%m-%d")
     date_range = pd.date_range(start_date_str, end_date_str)
 
-    answer = df[(pd.to_datetime(df["Дата операции"], dayfirst=True).dt.normalize().isin(date_range)) & (
-            df["Категория"] == category)]
-
-    return answer
+    try:
+        report = df[
+            (pd.to_datetime(df["Дата операции"], dayfirst=True).dt.normalize().isin(date_range))
+            & (df["Категория"] == category)
+            ]
+    except Exception as e:
+        reports_logger.error(f"Ошибка - {e}")
+        return pd.DataFrame()
+    else:
+        return report
