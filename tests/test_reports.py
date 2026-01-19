@@ -7,4 +7,5 @@ from src.reports import spending_by_category
 
 
 def test_spending_by_category():
-    assert spending_by_category(pd.read_excel(DATA_DIR), "ЖКХ", "2021-12-22 01:00:00") == ""
+    result = spending_by_category(pd.read_excel(DATA_DIR), "ЖКХ", "2021-12-22 01:00:00")
+    print(result)

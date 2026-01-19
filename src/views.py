@@ -1,7 +1,15 @@
 import json
 
 from config import DATA_DIR
-from src.utils import get_card_data, get_currency_rates, get_filtered_df, get_greetings, get_stock_price, get_top_trans
+from src.utils import (
+    get_card_data,
+    get_currency_rates,
+    get_datetime,
+    get_filtered_df,
+    get_greetings,
+    get_stock_price,
+    get_top_trans,
+)
 
 
 def get_main_json_answer(user_time: str, path_to_excel: str = DATA_DIR) -> str:
@@ -13,12 +21,13 @@ def get_main_json_answer(user_time: str, path_to_excel: str = DATA_DIR) -> str:
     4. Курс волют
     5. Стоимость акций из S&P500"""
 
-    filtered_df = get_filtered_df(user_time, path_to_excel)
+    user_time_dt = get_datetime(user_time)
+    filtered_df = get_filtered_df(user_time_dt, path_to_excel)
 
     final_dict = {}
 
     list_of_data = [
-        get_greetings(),
+        get_greetings(user_time_dt[0]),
         get_card_data(filtered_df),
         get_top_trans(filtered_df),
         get_currency_rates(),

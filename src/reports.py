@@ -56,7 +56,7 @@ def spending_by_category(df: pd.DataFrame, category: str, date: str | None) -> p
         report = df[
             (pd.to_datetime(df["Дата операции"], dayfirst=True).dt.normalize().isin(date_range))
             & (df["Категория"] == category)
-            ]
+        ]
     except Exception as e:
         reports_logger.error(f"Ошибка - {e}")
         return pd.DataFrame()
