@@ -2,7 +2,7 @@ import json
 import logging
 from datetime import datetime
 from functools import wraps
-from typing import Any, Callable
+from typing import Any, Callable, Optional
 
 import pandas as pd
 
@@ -37,7 +37,7 @@ def save_to_file(path_to_file: str = REPORT_DIR) -> Callable:
 
 
 @save_to_file()
-def spending_by_category(df: pd.DataFrame, category: str, date: str | None) -> pd.DataFrame:
+def spending_by_category(df: pd.DataFrame, category: str, date: Optional[str] = None ) -> pd.DataFrame:
     """Функция возвращает траты по заданной категории за последние три месяца (от переданной даты)"""
 
     reports_logger.info("Вызвана функция 'spending_by_category'")
@@ -53,9 +53,10 @@ def spending_by_category(df: pd.DataFrame, category: str, date: str | None) -> p
     date_range = pd.date_range(start_date_str, end_date_str)
 
     try:
-        report = df[
-            (pd.to_datetime(df["Дата операции"], dayfirst=True).dt.normalize().isin(date_range))
-            & (df["Категория"] == category)
+        filtered_df = df.dropna(subset=['Категория'])
+        report = filtered_df[
+            (pd.to_datetime(filtered_df["Дата операции"], dayfirst=True).dt.normalize().isin(date_range))
+            & (filtered_df["Категория"] == category)
         ]
     except Exception as e:
         reports_logger.error(f"Ошибка - {e}")

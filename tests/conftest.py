@@ -1,16 +1,9 @@
 import pandas as pd
 import pytest
 
+from config import DATA_DIR
+
 
 @pytest.fixture
 def df_for_tests():
-    return pd.DataFrame({"Дата операции": ["30.12.2021 01:00:00"],
-                         "Дата платежа": ["30.12.2021"],
-                         "Сумма операции": [1442.11],
-                         "Сумма платежа": [100],
-                         "Сумма операции с округлением": [1442.11],
-                         "Категория": ["ЖКХ"],
-                         "Описание": ["ЖКХ Услуги"],
-                         "Номер карты": ["*7197"],
-                         "Статус": ["OK"]
-                         })
+    return pd.read_excel(DATA_DIR)

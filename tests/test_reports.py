@@ -1,11 +1,15 @@
-from unittest.mock import patch
+import pytest
 
-import pandas as pd
-
-from config import DATA_DIR
 from src.reports import spending_by_category
 
 
-def test_spending_by_category():
-    result = spending_by_category(pd.read_excel(DATA_DIR), "ЖКХ", "2021-12-22 01:00:00")
-    print(result)
+@pytest.mark.parametrize('test_category, test_date, expected',
+                         [
+                             ("ЖКХ", "2021-11-15 01:00:00", 8),
+                             ("Супермаркеты", "2020-10-15 01:00:00", 147),
+                             ("Переводы", "2022-01-15 01:00:00", 25),
+                          ])
+def test_spending_by_category(df_for_tests, test_category, test_date, expected):
+    result = spending_by_category(df_for_tests, test_category, test_date)
+
+    assert len(result) == expected

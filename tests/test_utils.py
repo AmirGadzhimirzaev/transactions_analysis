@@ -32,24 +32,29 @@ def test_greetings(hour, expected):
 def test_get_filtered_df(mock_read_excel, df_for_tests):
     mock_read_excel.return_value = df_for_tests
 
-    assert len(get_filtered_df(get_datetime("2021-12-30 01:00:00"), "some.xlsx")) == 1
+    assert len(get_filtered_df(get_datetime("2021-12-30 01:00:00"), "some.xlsx")) == 176
 
     mock_read_excel.assert_called_once_with("some.xlsx")
 
 
 def test_get_card_data(df_for_tests):
     assert get_card_data(df_for_tests) == json.dumps(
-        {"cards": [{"last_digits": "7197", "total_spent": 1442.11, "cashback": 14.42}]}
-    )
+        {"cards": [{"last_digits": "7197", "total_spent": -2319507.75, "cashback": -23195.08},
+                   {"last_digits": "4556", "total_spent": 545261.72, "cashback": 5452.62},
+                   {"last_digits": "5091", "total_spent": -14918.16, "cashback": -149.18},
+                   {"last_digits": "5441", "total_spent": -470854.8, "cashback": -4708.55},
+                   {"last_digits": "1112", "total_spent": -46207.08, "cashback": -462.07},
+                   {"last_digits": "5507", "total_spent": -84000.0, "cashback": -840.0},
+                   {"last_digits": "6002", "total_spent": -69200.0, "cashback": -692.0}]})
 
 
 @patch("pandas.DataFrame.nlargest")
 def test_get_top_trans(mock_nlargest, df_for_tests):
-    mock_nlargest.return_value = df_for_tests
+    mock_nlargest.return_value = df_for_tests.head(1)
 
-    assert get_top_trans(df_for_tests) == json.dumps(
-        {"top_transactions": [{"date": "30.12.2021", "amount": 1442.11, "category":
-            "ЖКХ", "description": "ЖКХ Услуги"}]}, ensure_ascii=False)
+    assert get_top_trans(df_for_tests) == json.dumps({"top_transactions": [
+        {"date": "31.12.2021", "amount": -160.89, "category": "Супермаркеты", "description": "Колхоз"}]},
+        ensure_ascii=False)
 
     mock_nlargest.assert_called_once()
 
